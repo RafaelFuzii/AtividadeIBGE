@@ -1,12 +1,33 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ChevronDownIcon } from '@heroicons/react/16/solid'
 import { Field, Label, Switch } from '@headlessui/react'
 import React from 'react'
+import axios from 'axios'
 
 export default function Inputs() {
-  const [agreed, setAgreed] = useState(false)
+  const [data, setData] = useState([])
+
+//   useEffect(() => {
+//     // axios.get(`https://servicodados.ibge.gov.br/api/v2/censos/nomes/${nome}?inicio=${anoInicio}&fim=${anoFim}`)
+//     .then((response) => {
+//       setData(response.data)
+//     })
+//     .catch((error) => {
+//       console.log(error)
+//     })
+//   }, [])
+
+  function handleSearch() {
+    const nome = document.querySelector('#nome')
+    const anoInicio = document.querySelector('#anoInicio')
+    const anoFim = document.querySelector('#anoFim')
+
+    console.log(nome)
+    console.log(anoInicio)
+    console.log(anoFim)
+  }
 
   return (
     <>
@@ -33,10 +54,9 @@ export default function Inputs() {
                 </label>
                 <div className="mt-2.5">
                     <input
-                        id="company"
-                        name="company"
+                        id="nomee"
+                        name="nome"
                         type="text"
-                        autoComplete="organization"
                         className="block w-auto rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
                         placeholder="Digite o nome"
                     />
@@ -52,11 +72,10 @@ export default function Inputs() {
                         </label>
                         <div className="mt-2.5">
                             <input
-                                id="last-name"
-                                name="last-name"
+                                id="anoInicio"
+                                name="anoInicio"
                                 placeholder="Digite o ano: 1920"
                                 type="text"
-                                autoComplete="family-name"
                                 className="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
                             />
                         </div>
@@ -68,16 +87,25 @@ export default function Inputs() {
                         </label>
                         <div className="mt-2.5">
                             <input
-                                id="last-name"
-                                name="last-name"
+                                id="anoFim"
+                                name="anoFim"
                                 placeholder="Digite o ano: 2000"
                                 type="text"
-                                autoComplete="family-name"
                                 className="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
                             />
                         </div>
                     </div>
 
+                </div>
+
+                <div className="mt-10">
+                    <button
+                        type="submit"
+                        onClick={handleSearch}
+                        className="block w-full rounded-md bg-indigo-600 px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                        >
+                        Buscar
+                    </button>
                 </div>
             </div>
         </div>
