@@ -1,33 +1,58 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { ChevronDownIcon } from '@heroicons/react/16/solid'
-import { Field, Label, Switch } from '@headlessui/react'
+import { useState } from 'react'
 import React from 'react'
 import axios from 'axios'
+import Chart from './Chart'
 
 export default function Inputs() {
-  const [data, setData] = useState([])
+    const [chartData, setChartData] = useState<null | { labels: any; datasets: any[] }>(null)
+    const [nome, setNome] = useState("")
+    const [anoInicio, setAnoInicio] = useState("")
+    const [anoFim, setAnoFim] = useState("")
 
-//   useEffect(() => {
-//     // axios.get(`https://servicodados.ibge.gov.br/api/v2/censos/nomes/${nome}?inicio=${anoInicio}&fim=${anoFim}`)
-//     .then((response) => {
-//       setData(response.data)
-//     })
-//     .catch((error) => {
-//       console.log(error)
-//     })
-//   }, [])
+    function filterYear(anoInicio, anoFim, data) {
+        return data.filter((item) => {
+            const periodo = item.periodo;
 
-  function handleSearch() {
-    const nome = document.querySelector('#nome')
-    const anoInicio = document.querySelector('#anoInicio')
-    const anoFim = document.querySelector('#anoFim')
+            const regex = /\[?(\d{4}),(\d{4})\]?/;
+            const match = periodo.match(regex);
+        
+            if (match) {
+              const periodoInicio = parseInt(match[1], 10);
+              const periodoFim = parseInt(match[2], 10);
+        
+              return (anoFim > periodoInicio && anoInicio < periodoFim);
+            }
+        
+            return false;
+          })
+    }
 
-    console.log(nome)
-    console.log(anoInicio)
-    console.log(anoFim)
-  }
+    async function handleSearch() {
+        const ibgeData = await axios.get(`https://servicodados.ibge.gov.br/api/v2/censos/nomes/${nome}?decada=${anoInicio}`)
+        const formatData = filterYear(anoInicio, anoFim, ibgeData.data[0].res)
+
+        const grapy = {
+            labels: formatData.map(
+                data => {
+                    const label = data.periodo.replace(/[\[\]]/g, '');
+                    return label
+                }),
+            datasets: [
+            {
+                label: 'Frequência por Período',
+                data: formatData.map(data => data.frequencia),
+                backgroundColor: "#FF0000"
+            }
+            ]
+        }
+        
+        setChartData(grapy)
+        setNome("")
+        setAnoInicio("")
+        setAnoFim("")
+    }
 
   return (
     <>
@@ -56,6 +81,8 @@ export default function Inputs() {
                     <input
                         id="nomee"
                         name="nome"
+                        value={nome}
+                        onChange={(e) => setNome(e.target.value)}
                         type="text"
                         className="block w-auto rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
                         placeholder="Digite o nome"
@@ -74,6 +101,8 @@ export default function Inputs() {
                             <input
                                 id="anoInicio"
                                 name="anoInicio"
+                                value={anoInicio}
+                                onChange={(e) => setAnoInicio(e.target.value)}
                                 placeholder="Digite o ano: 1920"
                                 type="text"
                                 className="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
@@ -89,6 +118,8 @@ export default function Inputs() {
                             <input
                                 id="anoFim"
                                 name="anoFim"
+                                value={anoFim}
+                                onChange={(e) => setAnoFim(e.target.value)}
                                 placeholder="Digite o ano: 2000"
                                 type="text"
                                 className="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
@@ -107,6 +138,9 @@ export default function Inputs() {
                         Buscar
                     </button>
                 </div>
+
+                <Chart data={chartData} />
+
             </div>
         </div>
     </>
