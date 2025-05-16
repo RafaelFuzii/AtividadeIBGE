@@ -4,12 +4,21 @@ import { useState } from 'react'
 import React from 'react'
 import axios from 'axios'
 import Chart from './Chart'
+import { Dialog, DialogPanel } from '@headlessui/react'
+import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 
 export default function Inputs() {
     const [chartData, setChartData] = useState<null | { labels: any; datasets: any[] }>(null)
     const [nome, setNome] = useState("")
     const [anoInicio, setAnoInicio] = useState("")
     const [anoFim, setAnoFim] = useState("")
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+    
+    const navigation = [
+        { name: 'Evolução do ranking de um nome', href: '#' },
+        { name: 'Evolução do ranking de nomes em uma localidade', href: '#' },
+        { name: 'Comparação de dois nomes ao longo do tempo (nacional)', href: '#' },
+      ]
 
     function filterYear(anoInicio, anoFim, data) {
         return data.filter((item) => {
@@ -56,6 +65,24 @@ export default function Inputs() {
 
   return (
     <>
+        <div className="bg-white">
+            <header className="absolute inset-x-0 top-0 z-50">
+                <nav aria-label="Global" className="flex items-center justify-between p-6 lg:px-8">
+                    <div className="flex lg:flex-1"></div>
+
+                    <div className="hidden lg:flex lg:gap-x-12 ">
+                        {navigation.map((item) => (
+                        <a key={item.name} href={item.href} className="text-sm/6 font-semibold text-gray-900 bg-[#9089fc] opacity-80">
+                            {item.name}
+                        </a>
+                        ))}
+                    </div>
+
+                    <div className="hidden lg:flex lg:flex-1 lg:justify-end"></div>
+                </nav>
+            </header>
+        </div>
+
         <div className="isolate bg-white px-6 py-24 sm:py-32 lg:px-8">
             <div
                 aria-hidden="true"
