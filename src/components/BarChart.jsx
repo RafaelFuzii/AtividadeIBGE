@@ -20,7 +20,7 @@ ChartJS.register(
   Legend
 );
 
-const Chart = ({ data }) => {
+const BarChart = ({ data }) => {
     useEffect(() => {
         console.log('Dados recebidos no Chart:', data);
       }, [data]);
@@ -51,4 +51,4 @@ const Chart = ({ data }) => {
   );
 };
 
-export default Chart;
+export default BarChart;

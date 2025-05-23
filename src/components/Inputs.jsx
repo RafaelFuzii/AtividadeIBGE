@@ -5,9 +5,11 @@ import React from 'react'
 import axios from 'axios'
 import Chart from './Chart'
 import LocalizationTable from './LocalizationTable'
+import BarChart from './BarChart'
 
 export default function Inputs() {
     const [chartData, setChartData] = useState(null)
+    const [barChartData, setBarChartData] = useState(null)
     const [nome, setNome] = useState("")
     const [anoInicio, setAnoInicio] = useState("")
     const [anoFim, setAnoFim] = useState("")
@@ -25,18 +27,25 @@ export default function Inputs() {
         { name: 'Comparação de dois nomes ao longo do tempo (nacional)', section: 'comparacao' },
       ]
 
-    function filterYear(anoInicio, anoFim, data) {
+      function filterYear(data, mode, anoInicio = null, anoFim = null) {
         return data.filter((item) => {
             const periodo = item.periodo;
 
             const regex = /\[?(\d{4}),(\d{4})\]?/;
             const match = periodo.match(regex);
-        
-            if (match) {
-              const periodoInicio = parseInt(match[1], 10);
-              const periodoFim = parseInt(match[2], 10);
+
+            if (!match) return false
+
+            const periodoInicio = parseInt(match[1], 10);
+            const periodoFim = parseInt(match[2], 10);
+
+            if (mode == "nome") {
         
               return (anoFim > periodoInicio && anoInicio < periodoFim);
+            }
+
+            if (mode == "comparacao") {
+                return [periodoInicio, periodoFim];
             }
         
             return false;
@@ -45,7 +54,7 @@ export default function Inputs() {
 
     async function handleSearch() {
         const ibgeData = await axios.get(`https://servicodados.ibge.gov.br/api/v2/censos/nomes/${nome}?decada=${anoInicio}`)
-        const formatData = filterYear(anoInicio, anoFim, ibgeData.data[0].res, "nome")
+        const formatData = filterYear(ibgeData.data[0].res, "nome", anoInicio, anoFim)
 
         const grapy = {
             labels: formatData.map(
@@ -55,9 +64,9 @@ export default function Inputs() {
                 }),
             datasets: [
             {
-                label: 'Frequência por Período',
+                label: 'Frequência',
                 data: formatData.map(data => data.frequencia),
-                backgroundColor: "#FF0000"
+                backgroundColor: "#9089fc"
             }
             ]
         }
@@ -82,14 +91,43 @@ export default function Inputs() {
     }
 
     async function handleSearchComparacao() {
-        const primeiroNome = await axios.get(`https://servicodados.ibge.gov.br/api/v2/censos/nomes/${primeiroNome}`)
-        const segundoNome = await axios.get(`https://servicodados.ibge.gov.br/api/v2/censos/nomes/${segundoNome}`)
+        const firstName = await axios.get(`https://servicodados.ibge.gov.br/api/v2/censos/nomes/${primeiroNome}`)
+        const secondName = await axios.get(`https://servicodados.ibge.gov.br/api/v2/censos/nomes/${segundoNome}`)
 
+        const firstNameFormat = filterYear(firstName.data[0].res, "comparacao")
+        const secondNameFormat = filterYear(secondName.data[0].res, "comparacao")
+
+        const grapy = {
+            labels: firstNameFormat.map(
+                data => {
+                    const label = data.periodo.replace(/[\[\]]/g, '');
+                    return label
+                }),
+            datasets: [
+            {
+                label: primeiroNome,
+                data: firstNameFormat.map(data => data.frequencia),
+                backgroundColor: "#9089fc"
+            },
+            {
+                label: segundoNome,
+                data: secondNameFormat.map(data => data.frequencia),
+                backgroundColor: "#A889FC"
+            }
+            ]
+        }
+
+        setBarChartData(grapy)
+        setPrimeiroNome("")
+        setSegundoNome("")
     }
 
     const handleSectionChange = (section) => {
         setActiveSection(section)
         setShowTable(false)
+        setChartData(null)
+        setBarChartData(null)
+
         window.scrollTo({ top: 0, behavior: 'smooth' })
     }
 
@@ -328,14 +366,14 @@ export default function Inputs() {
                 <div className="mt-10">
                         <button 
                         type="submit"
-                            onClick={handleSearch}
+                            onClick={handleSearchComparacao}
                         className="block w-full rounded-md bg-indigo-600 px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                         >
                             Buscar
                         </button>
                     </div>
 
-                <Chart data={chartData} />
+                <BarChart data={barChartData}/>
 
             </div>
         </div>
