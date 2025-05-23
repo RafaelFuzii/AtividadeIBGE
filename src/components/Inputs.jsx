@@ -4,8 +4,7 @@ import { useState } from 'react'
 import React from 'react'
 import axios from 'axios'
 import Chart from './Chart'
-import { Dialog, DialogPanel } from '@headlessui/react'
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
+import LocalizationTable from './LocalizationTable'
 
 export default function Inputs() {
     const [chartData, setChartData] = useState(null)
@@ -15,6 +14,10 @@ export default function Inputs() {
     const [localidade, setLocalidade] = useState("")
     const [activeSection, setActiveSection] = useState('evolucao')
     const [showTable, setShowTable] = useState(false)
+    const [localidadeTable, setLocalidadeTable] = useState(null)
+    const [primeiroNome, setPrimeiroNome] = useState("")
+    const [segundoNome, setSegundoNome] = useState("")
+
 
     const navigation = [
         { name: 'Evolução do ranking de um nome', section: 'evolucao' },
@@ -42,7 +45,7 @@ export default function Inputs() {
 
     async function handleSearch() {
         const ibgeData = await axios.get(`https://servicodados.ibge.gov.br/api/v2/censos/nomes/${nome}?decada=${anoInicio}`)
-        const formatData = filterYear(anoInicio, anoFim, ibgeData.data[0].res)
+        const formatData = filterYear(anoInicio, anoFim, ibgeData.data[0].res, "nome")
 
         const grapy = {
             labels: formatData.map(
@@ -73,12 +76,20 @@ export default function Inputs() {
             frequencia: item.frequencia
         }))
 
+        setLocalidadeTable(tableData)
         setLocalidade("")
         setShowTable(true)
     }
 
+    async function handleSearchComparacao() {
+        const primeiroNome = await axios.get(`https://servicodados.ibge.gov.br/api/v2/censos/nomes/${primeiroNome}`)
+        const segundoNome = await axios.get(`https://servicodados.ibge.gov.br/api/v2/censos/nomes/${segundoNome}`)
+
+    }
+
     const handleSectionChange = (section) => {
         setActiveSection(section)
+        setShowTable(false)
         window.scrollTo({ top: 0, behavior: 'smooth' })
     }
 
@@ -249,28 +260,9 @@ export default function Inputs() {
                     </button>
                 </div>
 
-                <table className="border-collapse border border-gray-400 ...">
-                    <thead>
-                        <tr>
-                        <th className="border border-gray-300 ...">State</th>
-                        <th className="border border-gray-300 ...">City</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                        <td className="border border-gray-300 ...">Indiana</td>
-                        <td className="border border-gray-300 ...">Indianapolis</td>
-                        </tr>
-                        <tr>
-                        <td className="border border-gray-300 ...">Ohio</td>
-                        <td className="border border-gray-300 ...">Columbus</td>
-                        </tr>
-                        <tr>
-                        <td className="border border-gray-300 ...">Michigan</td>
-                        <td className="border border-gray-300 ...">Detroit</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div className={`${showTable ? 'block' : 'hidden'}`}>
+                    <LocalizationTable data={localidadeTable}/>
+                </div>
 
             </div>
         </div>
@@ -294,37 +286,20 @@ export default function Inputs() {
                 <h2 className="text-4xl font-semibold tracking-tight text-balance text-gray-900 sm:text-5xl">IBGE</h2>
             </div>
 
-            <div className="flex justify-center mt-10">
-                <label className="mt-3.5 mr-2 block text-sm/6 font-semibold text-gray-900">
-                    Nome
-                </label>
-                <div className="mt-2.5">
-                        <input 
-                        id="nomee"
-                        name="nome"
-                            value={nome} 
-                            onChange={(e) => setNome(e.target.value)}
-                        type="text"
-                        className="block w-auto rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
-                            placeholder="Digite o nome"
-                    />
-                </div>
-            </div>
-
             <div className="mx-auto mt-7 max-w-xl sm:mt-20">
                 <div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
 
                     <div>
-                        <label htmlFor="last-name" className="block text-sm/4 font-semibold text-gray-900">
-                        Ano Inicio
+                        <label htmlFor="primeiroNome" className="block text-sm/4 font-semibold text-gray-900">
+                        Nome
                         </label>
                         <div className="mt-2.5">
                             <input 
-                                id="anoInicio"
-                                name="anoInicio"
-                                value={anoInicio} 
-                                onChange={(e) => setAnoInicio(e.target.value)}
-                                placeholder="Digite o ano: 1920"
+                                id="primeiroNome"
+                                name="primeiroNome"
+                                value={primeiroNome} 
+                                onChange={(e) => setPrimeiroNome(e.target.value)}
+                                placeholder="Digite o nome: Maria"
                                 type="text"
                                 className="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
                             />
@@ -332,16 +307,16 @@ export default function Inputs() {
                     </div>
 
                     <div>
-                        <label htmlFor="last-name" className="block text-sm/4 font-semibold text-gray-900">
-                        Ano Fim
+                        <label htmlFor="segundoNome" className="block text-sm/4 font-semibold text-gray-900">
+                        Nome
                         </label>
                         <div className="mt-2.5">
                             <input 
-                                id="anoFim"
-                                name="anoFim"
-                                value={anoFim} 
-                                onChange={(e) => setAnoFim(e.target.value)}
-                                placeholder="Digite o ano: 2000"
+                                id="segundoNome"
+                                name="segundoNome"
+                                value={segundoNome} 
+                                onChange={(e) => setSegundoNome(e.target.value)}
+                                placeholder="Digite o nome: Henrique"
                                 type="text"
                                 className="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
                             />
