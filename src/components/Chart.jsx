@@ -22,7 +22,6 @@ ChartJS.register(
 
 const Chart = ({ data }) => {
     useEffect(() => {
-        console.log('Dados recebidos no Chart:', data);
       }, [data]);
     
   if (!data) return null;
